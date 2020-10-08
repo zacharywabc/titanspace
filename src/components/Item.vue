@@ -46,6 +46,7 @@ export default class Item extends Vue {
     &_title {
       left: 22vw;
       top: 10%;
+      font-size: 3.5vw;
     }
 
     &_inner {

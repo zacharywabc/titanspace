@@ -3,6 +3,17 @@
     <router-view/>
   </div>
 </template>
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator';
+
+@Component
+export default class App extends Vue {
+  private created(): void {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    document.addEventListener('touchstart', () => {}, true);
+  }
+}
+</script>
 <style lang="scss">
 html {
   font-size: 14px;
