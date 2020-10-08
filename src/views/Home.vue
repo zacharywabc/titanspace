@@ -6,9 +6,9 @@
           <img src="@/assets/logo1.png" />
         </a>
         <div class="nav flex align-center">
-          <router-link to="/">{{t('DEFI')}}</router-link>
-          <router-link to="/">{{t('HOW_JOIN')}}</router-link>
-          <router-link to="/">{{t('ABOUT')}}</router-link>
+          <div @click="defiShow = true">{{t('DEFI')}}</div>
+          <div @click="joinShow = true">{{t('HOW_JOIN')}}</div>
+          <div @click="aboutShow = true">{{t('ABOUT')}}</div>
         </div>
         <div class="lang" tabindex="-1">
           <div class="lang_selected">{{langs[lang] || langs.zh}}</div>
@@ -125,8 +125,16 @@
       <a target="_blank" href="">TitanSpace  Telegram</a>
     </div>
 
-    <Modal v-model="modalShow" title="title">
-      ashjdhsad
+    <Modal v-model="defiShow" :title="t('DEFI')">
+      Content
+    </Modal>
+
+    <Modal v-model="joinShow" :title="t('HOW_JOIN')">
+      Content
+    </Modal>
+
+    <Modal v-model="aboutShow" :title="t('ABOUT')">
+      Content
     </Modal>
   </div>
 </template>
@@ -143,7 +151,11 @@ import t, { langs } from '@/i18n';
 export default class Home extends Vue {
   private lang = navigator.language || (navigator as any).userLanguage;
 
-  private modalShow = false;
+  private defiShow = false;
+
+  private joinShow = false;
+
+  private aboutShow = false;
 
   private trx = 0;
 
@@ -193,7 +205,7 @@ export default class Home extends Vue {
 .first {
   min-height: 100vh;
 
-  @include respond(phone) {
+  @include respond(pad) {
     min-height: auto;
   }
 }
@@ -201,18 +213,18 @@ export default class Home extends Vue {
   max-width: 70vw;
   margin: 0 auto;
   padding: 20px 0;
-  flex-wrap: wrap;
 
   @include respond(phone) {
     max-width: 100vw;
     padding: 10px;
+    flex-wrap: wrap;
 
     .nav {
       order: 3;
       margin: 20px 0;
       flex: 1;
       text-align: center;
-      > a {
+      > div {
         flex: 1;
       }
     }
@@ -223,11 +235,10 @@ export default class Home extends Vue {
 }
 .nav {
   white-space: nowrap;
-  margin-right: 3vw;
 
-  > a {
+  > div {
     margin: 0 20px;
-    text-decoration: none;
+    cursor: pointer;
   }
 }
 .lang {
@@ -268,6 +279,7 @@ export default class Home extends Vue {
     margin-top: 1px;
     padding: 5px 0;
     z-index: 2;
+    background: rgba(0, 0, 0, .7);
 
     > a {
       display: block;
