@@ -10,7 +10,7 @@
           <div @click="joinShow = true">{{t('HOW_JOIN')}}</div>
           <div @click="aboutShow = true">{{t('ABOUT')}}</div>
         </div>
-        <div class="lang" tabindex="-1">
+        <div class="lang">
           <div class="lang_selected">{{langs[lang] || langs.zh}}</div>
           <div class="lang_options">
             <router-link
@@ -268,7 +268,7 @@ export default class Home extends Vue {
     cursor: pointer;
   }
 
-  &:hover &_options, &:active &_options, &:focus &_options {
+  &:hover &_options, &:active &_options {
     display: block;
   }
 
