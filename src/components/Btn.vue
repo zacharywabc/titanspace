@@ -15,7 +15,7 @@ export default class Btn extends Vue {
 <style lang="scss" scoped>
 .btn {
   display: inline-block;
-  padding: 15px 25px 10px;
+  padding: 15px 15px 10px;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;

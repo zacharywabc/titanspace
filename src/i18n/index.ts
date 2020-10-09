@@ -1,10 +1,9 @@
 import zh from './zh';
+import en from './en';
 
 const langs: Record<string, any> = {
-  'zh-CN': zh,
-  en: {
-    DEFI: 'DeFi',
-  },
+  zh,
+  en,
 };
 
 Object.keys(langs).forEach((k) => {

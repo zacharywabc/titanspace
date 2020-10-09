@@ -126,15 +126,15 @@
     </div>
 
     <Modal v-model="defiShow" :title="t('DEFI')">
-      Content
+      <div class="modal_detail" v-html="t('GUIDE')"></div>
     </Modal>
 
     <Modal v-model="joinShow" :title="t('HOW_JOIN')">
-      Content
+      <div class="modal_detail" v-html="t('DETAIL_JOIN')"></div>
     </Modal>
 
     <Modal v-model="aboutShow" :title="t('ABOUT')">
-      Content
+      <div class="modal_detail" v-html="t('DETAIL_ABOUT')"></div>
     </Modal>
   </div>
 </template>
@@ -226,6 +226,7 @@ export default class Home extends Vue {
       text-align: center;
       > div {
         flex: 1;
+        margin: 0;
       }
     }
   }
@@ -332,6 +333,10 @@ export default class Home extends Vue {
     :first-child {
       margin-bottom: 10px;
     }
+
+    :last-child {
+      margin-left: 5px;
+    }
   }
 
   @include respond(phone) {
@@ -378,6 +383,10 @@ export default class Home extends Vue {
   align-items: center;
   justify-content: space-between;
   margin: 10px 0;
+
+  :first-child {
+    text-align: left;
+  }
 }
 .dynamic {
   &_tip {
@@ -391,5 +400,10 @@ export default class Home extends Vue {
   flex: 1;
   text-align: center;
   flex-wrap: wrap;
+}
+.modal_detail {
+  max-height: 50vh;
+  overflow: auto;
+  white-space: pre-wrap;
 }
 </style>
