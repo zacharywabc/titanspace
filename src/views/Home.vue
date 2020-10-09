@@ -69,7 +69,7 @@
 
       <Item :title="t('SMART')">
         <div>
-          <div class="text_row"><span>{{t('SMART_ADD')}}</span><span>--</span></div>
+          <div class="text_row"><span>{{t('SMART_ADD')}}</span><span>{{myAddress}}</span></div>
           <div class="text_row"><span>{{t('SMART_TOTAL')}}</span><span>-- TRX</span></div>
           <div class="text_row"><span>{{t('SMART_BALANCE')}}</span><span>-- TRX</span></div>
           <div class="text_row"><span>{{t('MEMBER_COIN_TOTAL')}}</span><span>-- TRX</span></div>
@@ -140,10 +140,21 @@
 </template>
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
+import TronWeb from 'tronweb';
 import Item from '@/components/Item.vue';
 import Btn from '@/components/Btn.vue';
 import Modal from '@/components/Modal.vue';
 import t, { langs } from '@/i18n';
+
+const contractAddress = 'TU4E83viohKX6ZNDGZVWq96tyqMsmtauaW';
+
+const abi = [{
+  constant: false, inputs: [{ name: 'value', type: 'string' }], name: 'postMessage', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function',
+}, {
+  constant: true, inputs: [], name: 'getMessage', outputs: [{ name: '', type: 'string' }], payable: false, stateMutability: 'view', type: 'function',
+}, {
+  anonymous: false, inputs: [{ indexed: false, name: 'value', type: 'string' }], name: 'PostMessage', type: 'event',
+}];
 
 @Component({
   components: { Item, Btn, Modal },
@@ -164,6 +175,22 @@ export default class Home extends Vue {
     en: 'English',
   }
 
+  private href = '';
+
+  private tvs = 'dsaaass';
+
+  private ds = '';
+
+  private tronWeb: any = null;
+
+  private myContract: any = null;
+
+  private tronWebInject: any;
+
+  private myAddress = '';
+
+  private tronState: any;
+
   private get t(): Function {
     return t(this.lang);
   }
@@ -175,6 +202,88 @@ export default class Home extends Vue {
 
   private created(): void {
     if (!langs[this.lang]) this.lang = 'zh';
+  }
+
+  private mounted(): void {
+    this.init();
+  }
+
+  private async init() {
+    try {
+      const { HttpProvider } = TronWeb.providers;
+      const fullNode = new HttpProvider('https://api.shasta.trongrid.io', 60000);
+      const solidityNode = new HttpProvider('https://api.shasta.trongrid.io', 60000);
+      const eventServer = new HttpProvider('https://api.shasta.someotherevent.io/', 60000);
+      // const privateKey = 'ba0daf827dbe0794110fb2e9d29add9a7f084d5222590bc34672ca41e59da674';
+      this.tronWeb = new TronWeb(
+        fullNode,
+        solidityNode,
+        eventServer,
+        // privateKey
+      );
+
+      if (!this.tronWeb) {
+        setTimeout(() => {
+          this.init();
+        }, 100);
+      } else {
+        // this.tronWeb.setAddress(window.tronWeb.defaultAddress.base58); // simple fix https://github.com/tronprotocol/tron-web/issues/176
+        this.myContract = await this.tronWeb.contract().at(contractAddress);
+        console.log(11);
+        console.log(this.myContract);
+        try {
+          this.initWebJect();
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    } catch (err) {
+      //
+    }
+  }
+
+  private async initWebJect() {
+    if (window.tronWeb) {
+      this.tronWebInject = window.tronWeb;
+      this.myAddress = this.tronWebInject.defaultAddress.base58;
+      console.log(this.myAddress);
+      // console.log("address: " + this.myAddress)
+      if (this.myAddress) {
+        this.tronState = '';
+        // this.tronWebInject.setAddress('TH8ngJfQZPThBhYCvLuVCyBU972Sxj9yvL')
+        // const contract1 = window.tronWeb.contract().at(contractAddress);
+        // this.next()
+        // this.myContractWebInject = this.tronWebInject.contract(abi, contractAddress)
+        // const args = {
+        //   callValue: 0,
+        //   shouldPollResponse: true,
+        // };
+      }
+    }
+  }
+
+  private async postMessage() {
+    console.log(window.tronWeb.defaultAddress.base58);
+    const webInject = window.tronWeb;
+    const contractx = webInject.contract(abi, contractAddress);
+    this.myContract = contractx;
+    const args = {
+      callValue: 0,
+      shouldPollResponse: true,
+    };
+    this.myContract.PostMessage().watch((err: any, event: any) => {
+      if (err) {
+        console.error('Error with "method" event:', err);
+      }
+      if (event) {
+        // eslint-disable-next-line no-alert
+        alert(event.result);
+        console.log(event);
+      }
+    });
+    await this.myContract.postMessage(`${new Date()}>>>>`).send(args);
+    const res1 = await this.myContract.getMessage().call();
+    this.ds = res1;
   }
 
   private langSelected(cur = '', lang: string): string {
