@@ -33,16 +33,16 @@
       <div class="stat flex">
         <div>
           <span>{{t('GLOBAL')}}</span>
-          <span>0</span>
+          <span>{{globalMember}}</span>
         </div>
         <div>
           <span>{{t('TLOCK')}}</span>
-          <span>0 TRX</span>
+          <span>{{totalDepositTrx}} TRX</span>
         </div>
         <div>
           <span>{{t('TRELEASE')}}</span>
-          <span>0 TRX</span>
-          <span>0 TSC</span>
+          <span>{{totalWithDrawTrx}} TRX </span>
+          <span> {{totalReleaseTsc}} TSC</span>
         </div>
       </div>
 
@@ -62,57 +62,57 @@
           </div>
           <div class="actions flex align-center justify-between">
             <Btn @click="setTRX(0)">{{t('CANCEL')}}</Btn>
-            <Btn type="green">{{t('LOCK')}}</Btn>
+            <Btn @click="deposit()" :loading="loading_w" type="green">{{t('LOCK')}}</Btn>
           </div>
         </div>
       </Item>
 
       <Item :title="t('SMART')">
         <div>
-          <div class="text_row"><span>{{t('SMART_ADD')}}</span><span>{{myAddress}}</span></div>
-          <div class="text_row"><span>{{t('SMART_TOTAL')}}</span><span>-- TRX</span></div>
-          <div class="text_row"><span>{{t('SMART_BALANCE')}}</span><span>-- TRX</span></div>
-          <div class="text_row"><span>{{t('MEMBER_COIN_TOTAL')}}</span><span>-- TRX</span></div>
-          <div class="text_row"><span>{{t('DAY_1')}}</span><span>-- TRX</span></div>
-          <div class="text_row"><span>{{t('TOP_10_CD')}}</span><span>--</span></div>
-          <div class="text_row"><span>{{t('TOP_10_TOTAL')}}</span><span>-- TRX</span></div>
-          <div class="text_row"><span>{{t('TSC_REWORD')}}</span><span>-- TSC</span></div>
-          <div class="text_row"><span>{{t('TSC_WITHDRAWAL')}}</span><span>-- TSC</span></div>
-          <div class="text_row"><span>{{t('REF_ADD')}}</span><span>--</span></div>
+          <div class="text_row"><span>{{t('SMART_ADD')}}</span><span>{{contractAddress}}</span></div>
+          <div class="text_row"><span>{{t('SMART_TOTAL')}}</span><span>{{totalDepositTrx}} TRX</span></div>
+          <div class="text_row"><span>{{t('SMART_BALANCE')}}</span><span>{{contractBalance}} TRX</span></div>
+          <div class="text_row"><span>{{t('MEMBER_COIN_TOTAL')}}</span><span>{{totalWithDrawTrx}} TRX</span></div>
+          <!-- <div class="text_row"><span>{{t('DAY_1')}}</span><span>-- TRX</span></div> -->
+          <div class="text_row"><span>{{t('TOP_10_CD')}}</span><span>{{poolCountDown}}</span></div>
+          <div class="text_row"><span>{{t('TOP_10_TOTAL')}}</span><span>{{poolTop10}} TRX</span></div>
+          <div class="text_row"><span>{{t('TSC_REWORD')}}</span><span>{{totalReleaseTsc}} TSC</span></div>
+          <div class="text_row"><span>{{t('TSC_WITHDRAWAL')}}</span><span>{{totalWithdrawTSC}} TSC</span></div>
+          <div class="text_row"><span>{{t('REF_ADD')}}</span><span>{{upLine}}</span></div>
         </div>
       </Item>
 
       <Item :title="t('STAT')">
         <div>
-          <div class="text_row"><span>{{t('INV_LINK')}}</span><span>--</span></div>
-          <div class="text_row"><span>{{t('TRX_LINK')}}</span><span>--</span></div>
-          <div class="text_row"><span>{{t('INV_TOTAL')}}</span><span>-- TRX</span></div>
-          <div class="text_row"><span>{{t('REWARD_161')}}</span><span>-- TRX</span></div>
-          <div class="text_row"><span>{{t('DIRECT')}}</span><span>-- 人</span></div>
-          <div class="text_row"><span>{{t('DIRECT_REWARD')}}</span><span>-- TRX</span></div>
-          <div class="text_row"><span>{{t('TOTAL_TEAM')}}</span><span>-- TSC</span></div>
-          <div class="text_row"><span>{{t('GLOBAL_10')}}</span><span>-- TSC</span></div>
-          <div class="text_row"><span>{{t('TSC_REWARD')}}</span><span>--</span></div>
-          <div class="text_row"><span>{{t('TOTAL_WITHDRAWAL')}}</span><span>--</span></div>
+          <div class="text_row"><span>{{t('INV_LINK')}}</span><span>{{myInvLink}}</span></div>
+          <div class="text_row"><span>{{t('TRX_LINK')}}</span><span>{{myAddress}}</span></div>
+          <div class="text_row"><span>{{t('INV_TOTAL')}}</span><span>{{myTotalDeposit}} TRX</span></div>
+          <div class="text_row"><span>{{t('REWARD_161')}}</span><span>{{myReward1618}} TRX</span></div>
+          <div class="text_row"><span>{{t('DIRECT')}}</span><span>{{referrals}}</span></div>
+          <div class="text_row"><span>{{t('DIRECT_REWARD')}}</span><span>{{myRefRewardAll}} TRX</span></div>
+          <div class="text_row"><span>{{t('TOTAL_TEAM')}}</span><span>{{myTeamRewardAll}} TRX</span></div>
+          <div class="text_row"><span>{{t('GLOBAL_10')}}</span><span>{{myTop10RewardAll}} TRX</span></div>
+          <div class="text_row"><span>{{t('TSC_REWARD')}}</span><span>{{myTscRewardAll}} TSC</span></div>
+          <div class="text_row"><span>{{t('TOTAL_WITHDRAWAL')}}</span><span>{{myWithdrawTrxAll}} TRX</span></div>
         </div>
       </Item>
 
       <Item :title="t('DYNAMIC')">
         <div class="dynamic">
           <div>
-            <div class="text_row"><span>{{t('INV_TRX')}}</span><span>-- TRX</span></div>
-            <div class="text_row"><span>{{t('DAY_REWARD')}}</span><span>-- TRX</span></div>
-            <div class="text_row"><span>{{t('TSC_FACTOR')}}</span><span>--</span></div>
-            <div class="text_row"><span>{{t('TRX_AVA')}}</span><span>-- TRX</span></div>
-            <div class="text_row"><span>{{t('TSC_AVA')}}</span><span>-- TSC</span></div>
+            <div class="text_row"><span>{{t('INV_TRX')}}</span><span>{{myInvestTrx}} TRX</span></div>
+            <div class="text_row"><span>{{t('DAY_REWARD')}}</span><span>{{myInvestTrx/100}} TRX</span></div>
+            <div class="text_row"><span>{{t('TSC_FACTOR')}}</span><span>{{myDymicFactor}}</span></div>
+            <div class="text_row"><span>{{t('TRX_AVA')}}</span><span>{{myTrxBalance}} TRX</span></div>
+            <div class="text_row"><span>{{t('TSC_AVA')}}</span><span>{{myTscBalance}} TSC</span></div>
           </div>
           <div class="flex justify-between mt-3">
             <div>
-              <Btn type="blue">{{t('TSC_COIN')}}</Btn>
+              <Btn type="blue" @click="tokenWithdraw()">{{t('TSC_COIN')}}</Btn>
               <div class="dynamic_tip">{{t('TSC_FEE')}}</div>
             </div>
             <div>
-              <Btn type="green">{{t('TRX_COIN')}}</Btn>
+              <Btn type="green" @click="withdraw()">{{t('TRX_COIN')}}</Btn>
               <div class="dynamic_tip">{{t('TRX_FEE')}}</div>
             </div>
           </div>
@@ -145,16 +145,9 @@ import Item from '@/components/Item.vue';
 import Btn from '@/components/Btn.vue';
 import Modal from '@/components/Modal.vue';
 import t, { langs } from '@/i18n';
+import abi from '../store/abi';
 
-const contractAddress = 'TU4E83viohKX6ZNDGZVWq96tyqMsmtauaW';
-
-const abi = [{
-  constant: false, inputs: [{ name: 'value', type: 'string' }], name: 'postMessage', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function',
-}, {
-  constant: true, inputs: [], name: 'getMessage', outputs: [{ name: '', type: 'string' }], payable: false, stateMutability: 'view', type: 'function',
-}, {
-  anonymous: false, inputs: [{ indexed: false, name: 'value', type: 'string' }], name: 'PostMessage', type: 'event',
-}];
+const contractAddress = 'TUTKT2zHNFPmeJYbSaXTg3o7Qkug61Atmj';
 
 @Component({
   components: { Item, Btn, Modal },
@@ -175,9 +168,82 @@ export default class Home extends Vue {
     en: 'English',
   }
 
-  private href = '';
+  // 合约地址
+  private contractAddress = contractAddress;
 
-  private tvs = 'dsaaass';
+  // 全球参与者
+  private globalMember = 0;
+
+  // 总充值量TRX
+  private totalDepositTrx = 0;
+
+  // 总提现量TRX
+  private totalWithDrawTrx = 0;
+
+  // 总释放量TSC
+  private totalReleaseTsc = 0;
+
+  // 合约余额
+  private contractBalance = 0;
+
+  // TSC已提总量
+  private totalWithdrawTSC = 0;
+
+  // 邀请人地址
+  private upLine = '';
+
+  // 我的邀请地址
+  private myInvLink = '';
+
+  // 我的投资总额
+  private myTotalDeposit = 0;
+
+  // 我的提现总额TRX
+  private myWithdrawTrxAll = 0;
+
+  // 我的1618%奖励
+  private myReward1618 = 0;
+
+  // 我的直推人数
+  private referrals = 0;
+
+  private poolCountDown = '';
+
+  // 我的直推奖励总额
+  private myRefRewardAll = 0;
+
+  // 我的团队奖励总额
+  private myTeamRewardAll = 0;
+
+  // 我的Top10奖励总额
+  private myTop10RewardAll = 0;
+
+  // 我的TSC奖励总额
+  private myTscRewardAll = 0;
+
+  // 已提TSC总额
+  private myWithdrawedTSC = 0;
+
+  // 可提TSC总额
+  private myTscBalance = 0;
+
+  // 可提TRX
+  private myTrxBalance = 0;
+
+  // 我的在投trx
+  private myInvestTrx = 0;
+
+  // 当前动态释放因子
+  private myDymicFactor = 0;
+
+  //
+  private loading_w = true;
+
+  private poolBalance = 0;
+
+  private poolTop10 = 0;
+
+  private tvs = 'dsss';
 
   private ds = '';
 
@@ -202,93 +268,184 @@ export default class Home extends Vue {
 
   private created(): void {
     if (!langs[this.lang]) this.lang = 'zh';
+    alert(900);
+    this.initWebJect();
   }
 
   private mounted(): void {
-    this.init();
-  }
-
-  private async init() {
-    try {
-      const { HttpProvider } = TronWeb.providers;
-      const fullNode = new HttpProvider('https://api.shasta.trongrid.io', 60000);
-      const solidityNode = new HttpProvider('https://api.shasta.trongrid.io', 60000);
-      const eventServer = new HttpProvider('https://api.shasta.someotherevent.io/', 60000);
-      // const privateKey = 'ba0daf827dbe0794110fb2e9d29add9a7f084d5222590bc34672ca41e59da674';
-      this.tronWeb = new TronWeb(
-        fullNode,
-        solidityNode,
-        eventServer,
-        // privateKey
-      );
-
-      if (!this.tronWeb) {
-        setTimeout(() => {
-          this.init();
-        }, 100);
-      } else {
-        // this.tronWeb.setAddress(window.tronWeb.defaultAddress.base58); // simple fix https://github.com/tronprotocol/tron-web/issues/176
-        this.myContract = await this.tronWeb.contract().at(contractAddress);
-        console.log(11);
-        console.log(this.myContract);
-        try {
-          this.initWebJect();
-        } catch (error) {
-          console.log(error);
-        }
-      }
-    } catch (err) {
-      //
-    }
+    this.initWebJect();
   }
 
   private async initWebJect() {
+    const { HttpProvider } = TronWeb.providers;
+    const fullNode = new HttpProvider('https://api.shasta.trongrid.io', 60000);
+    const solidityNode = new HttpProvider('https://api.shasta.trongrid.io', 60000);
+    const eventServer = new HttpProvider('https://api.shasta.someotherevent.io/', 60000);
+    this.tronWeb = new TronWeb(
+      fullNode,
+      solidityNode,
+      eventServer,
+    );
+
     if (window.tronWeb) {
       this.tronWebInject = window.tronWeb;
       this.myAddress = this.tronWebInject.defaultAddress.base58;
       console.log(this.myAddress);
-      // console.log("address: " + this.myAddress)
       if (this.myAddress) {
-        this.tronState = '';
-        // this.tronWebInject.setAddress('TH8ngJfQZPThBhYCvLuVCyBU972Sxj9yvL')
-        // const contract1 = window.tronWeb.contract().at(contractAddress);
-        // this.next()
-        // this.myContractWebInject = this.tronWebInject.contract(abi, contractAddress)
-        // const args = {
-        //   callValue: 0,
-        //   shouldPollResponse: true,
-        // };
+        console.log(window.tronWeb.defaultAddress.base58);
+        const webInject = window.tronWeb;
+        const contractx = webInject.contract(abi, contractAddress);
+        this.myContract = contractx;
+        console.log(this.myContract);
       }
+      this.initPage();
     }
   }
 
-  private async postMessage() {
-    console.log(window.tronWeb.defaultAddress.base58);
-    const webInject = window.tronWeb;
-    const contractx = webInject.contract(abi, contractAddress);
-    this.myContract = contractx;
+  private async initPage() {
+    // console.log(this.myContract);
+    // const pb = await this.myContract.userInfo('TW9Fwdqet3Km6u4y41d5ANZruZ3C7f1nur').call();
+    // this.poolBalance = this.tronWeb.fromSun(pb).toFixed(2);
+    const contractInfo = await this.myContract.contractInfo().call();
+    this.contractBalance = contractInfo._trx_balance;
+    this.contractBalance = this.hexToTrx(this.contractBalance);
+    this.totalReleaseTsc = contractInfo._total_token_mined;
+    this.totalReleaseTsc = this.hexToTrx(this.totalReleaseTsc);
+    this.totalWithdrawTSC = contractInfo._total_token_withdraw;
+    this.totalWithdrawTSC = this.hexToTrx(this.totalWithdrawTSC);
+
+    this.globalMember = contractInfo._total_users;
+    this.totalDepositTrx = this.hexToTrx(contractInfo._total_deposited);
+    this.totalWithDrawTrx = this.hexToTrx(contractInfo._total_withdraw);
+    this.poolTop10 = this.hexToTrx(contractInfo._pool_balance) / 10;
+    const last_pool_time = contractInfo._pool_last_draw;
+    this.poolCountDown = this.calPoolCountDown(last_pool_time);
+
+    const userInfo = await this.myContract.users(this.myAddress).call();
+    const ttd = this.hexToTrx(userInfo.total_deposits);
+    console.log(`ttd: ${ttd}`);
+    if (ttd > 0) {
+      alert(ttd);
+      this.upLine = this.tronWeb.address.fromHex(userInfo.upline);
+      this.myInvLink = `${window.location.protocol}//${window.location.host}?ref=${this.myAddress}`;
+      this.myTotalDeposit = this.hexToTrx(userInfo.total_deposits);
+      this.myWithdrawTrxAll = this.hexToTrx(userInfo.total_payouts);
+      this.myInvestTrx = this.hexToTrx(userInfo.deposit_amount);
+      this.myReward1618 = this.myTotalDeposit * 1.618;
+      this.referrals = userInfo.referrals;
+      this.myRefRewardAll = this.hexToTrx(userInfo.direct_bonus);
+      this.myTeamRewardAll = this.hexToTrx(userInfo.match_bonus);
+      this.myTop10RewardAll = this.hexToTrx(userInfo.pool_bonus);
+
+      // TSC 挖矿
+      const tscMiningInfo = await this.myContract.users_mining(this.myAddress).call();
+      if (tscMiningInfo) {
+        this.myTscBalance = this.hexToTrx(tscMiningInfo.mining_rewards);
+        this.myTscRewardAll = this.hexToTrx(tscMiningInfo.total_mining_rewards);
+        this.myWithdrawedTSC = this.hexToTrx(tscMiningInfo.total_mining_payouts);
+      }
+
+      // 动态因子
+      const dymic_factor = await this.myContract.dynamicFactorOf(this.myAddress).call();
+      console.log(`dymic:${dymic_factor.dynamic_factor}`);
+      this.myDymicFactor = dymic_factor.dynamic_factor / 10;
+
+      // 我的payouts
+      const myPayouts = await this.myContract.payoutOf(this.myAddress).call();
+      console.log(myPayouts);
+      this.myTrxBalance = myPayouts.payout;
+    } else {
+      // 未注册
+      this.upLine = this.getUrlKey('ref', window.location.href);
+      console.log(`ref upline :${this.upLine}`);
+      try {
+        const uplineInfo = await this.myContract.users(this.upLine).call();
+        const ttd1 = this.hexToTrx(uplineInfo.total_deposits);
+        console.log(`ttd1: ${ttd1}`);
+        if (ttd1 > 0) {
+        } else {
+          this.upLine = 'TEPSJJXQHWjsjnDdWxuCG7aMRTDUVYvBt7';
+        }
+      } catch (err) {
+        console.log(`ref upne err${err}`);
+        this.upLine = 'TEPSJJXQHWjsjnDdWxuCG7aMRTDUVYvBt7';
+      }
+      console.log(`real:${this.upLine}`);
+    }
+  }
+
+  private async deposit(trx: number) {
+    console.log(`up:${this.upLine}`);
+    console.log(`my:${this.myAddress}`);
+    if (this.trx == 0) {
+      this.$message({
+        message: 'dddddd',
+        type: 'warning',
+      });
+      return;
+    }
     const args = {
+      feeLimit: 200000000,
+      callValue: this.tronWeb.toSun(this.trx),
+      shouldPollResponse: true,
+    };
+
+    await this.myContract.deposit(this.upLine).send(args).then((res) => {
+      this.initPage();
+      console.log(res);
+    }, (err) => {
+      alert(err);
+      console.log(err);
+    });
+  }
+
+  private async withdrawTRX() {
+    if (this.myTrxBalance <= 1) {
+      alert('TRX <= 1');
+      return;
+    }
+    const args = {
+      feeLimit: 200000000,
       callValue: 0,
       shouldPollResponse: true,
     };
-    this.myContract.PostMessage().watch((err: any, event: any) => {
-      if (err) {
-        console.error('Error with "method" event:', err);
-      }
-      if (event) {
-        // eslint-disable-next-line no-alert
-        alert(event.result);
-        console.log(event);
-      }
+
+    this.myContract.withdraw().send(args).then((res) => {
+      this.initPage();
+      console.log(res);
+    }, (err) => {
+      alert(err);
+      console.log(err);
     });
-    await this.myContract.postMessage(`${new Date()}>>>>`).send(args);
-    const res1 = await this.myContract.getMessage().call();
-    this.ds = res1;
+  }
+
+  private async withdrawTSC() {
+    if (this.myTscBalance <= 20) {
+      alert('TSC <= 0');
+      return;
+    }
+    const args = {
+      feeLimit: 200000000,
+      callValue: 0,
+      shouldPollResponse: true,
+    };
+
+    this.myContract.tokenWithdraw().send(args).then((res) => {
+      this.initPage();
+      console.log(res);
+    }, (err) => {
+      alert(err);
+      console.log(err);
+    });
   }
 
   private langSelected(cur = '', lang: string): string {
     if (cur === lang || cur.split('-')[0] === lang) return 'lang_options-selected';
     return '';
+  }
+
+  private getUrlKey(name, url): string {
+    return decodeURIComponent((new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)').exec(url) || [, ''])[1].replace(/\+/g, '%20')) || null;
   }
 
   private incTRX(inc: number): void {
@@ -301,6 +458,40 @@ export default class Home extends Vue {
 
   private changeLang(lang: string): void {
     this.lang = lang;
+  }
+
+  private calPoolCountDown(lastTime: string) {
+    const lastD = new Date(lastTime);
+    const now = new Date();
+    const total = (now.getTime() - lastD.getTime()) / 1000;
+    const day = parseInt(total / (24 * 60 * 60));// 计算整数天数
+    if (day >= 1) {
+      return '00:00';
+    }
+    const afterDay = total - day * 24 * 60 * 60;// 取得算出天数后剩余的秒数
+
+    const hour = parseInt(afterDay / (60 * 60));// 计算整数小时数
+
+    const afterHour = total - day * 24 * 60 * 60 - hour * 60 * 60;// 取得算出小时数后剩余的秒数
+
+    const min = parseInt(afterHour / 60);// 计算整数分
+
+    return `${hour} : ${min}`;
+  }
+
+  private formatDate(time: string) {
+    const d = new Date(time);
+    const year = d.getFullYear(); // 取得4位数的年份
+    const month = d.getMonth() + 1; // 取得日期中的月份，其中0表示1月，11表示12月
+    const date = d.getDate(); // 返回日期月份中的天数（1到31）
+    const hour = d.getHours(); // 返回日期中的小时数（0到23）
+    const minute = d.getMinutes(); // 返回日期中的分钟数（0到59）
+    const second = d.getSeconds(); // 返回日期中的秒数（0到59）
+    return `${year}-${month}-${date} ${hour}:${minute}:${second}`;
+  }
+
+  private hexToTrx(hex: number) {
+    return Number(this.tronWeb.fromSun(hex.toString()));
   }
 }
 </script>
