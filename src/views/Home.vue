@@ -107,11 +107,11 @@
           </div>
           <div class="flex justify-between mt-3">
             <div>
-              <Btn type="blue" @click="withdrawTSC">{{t('TSC_COIN')}}</Btn>
+              <Btn type="blue" @click="withdrawTSC()">{{t('TSC_COIN')}}</Btn>
               <div class="dynamic_tip">{{t('TSC_FEE')}}</div>
             </div>
             <div>
-              <Btn type="green" @click="withdrawTRX">{{t('TRX_COIN')}}</Btn>
+              <Btn type="green" @click="withdrawTRX()">{{t('TRX_COIN')}}</Btn>
               <div class="dynamic_tip">{{t('TRX_FEE')}}</div>
             </div>
           </div>
@@ -146,7 +146,8 @@ import Modal from '@/components/Modal.vue';
 import t, { langs } from '@/i18n';
 import abi from '../store/abi';
 
-const contractAddress = 'TUTKT2zHNFPmeJYbSaXTg3o7Qkug61Atmj';
+const contractAddress = 'TRdc9ghNAGqRKmf2hG7X7iyKQKwYJD1zgr';
+const defaultUpline = 'TB6AGbDLjxwuJwLwJzHJ8XsZAyrbnZXSeV';
 
 @Component({
   components: { Item, Btn, Modal },
@@ -254,6 +255,8 @@ export default class Home extends Vue {
 
   private myAddress = '';
 
+  private tronlinkflg = false;
+
   private tronState: any;
 
   private get t(): Function {
@@ -270,10 +273,26 @@ export default class Home extends Vue {
   }
 
   private mounted(): void {
-    this.initWebJect();
+    setInterval(async () => {
+      this.initWebJect();
+    }, 5000);
   }
 
   private async initWebJect() {
+    if (window.tronWeb) {
+      this.tronlinkflg = true;
+      const thisAddress = window.tronWeb.defaultAddress.base58;
+      if (this.myAddress !== thisAddress) {
+        this.myAddress = thisAddress;
+        this.success(`Your trx wallet address: ${thisAddress}`);
+      } else {
+        return;
+      }
+    } else {
+      this.fail('loading tronlink');
+      return;
+    }
+
     const { HttpProvider } = TronWeb.providers;
     const fullNode = new HttpProvider('https://api.shasta.trongrid.io', 60000);
     const solidityNode = new HttpProvider('https://api.shasta.trongrid.io', 60000);
@@ -284,23 +303,22 @@ export default class Home extends Vue {
       eventServer,
     );
 
-    if (window.tronWeb) {
-      this.tronWebInject = window.tronWeb;
-      this.myAddress = this.tronWebInject.defaultAddress.base58;
-      if (this.myAddress) {
-        const webInject = window.tronWeb;
-        const contractx = webInject.contract(abi, contractAddress);
-        this.myContract = contractx;
-        console.log(this.myContract);
-      }
-      this.initPage();
+    this.tronWebInject = window.tronWeb;
+    this.myAddress = this.tronWebInject.defaultAddress.base58;
+    if (this.myAddress) {
+      const webInject = window.tronWeb;
+      const contractx = webInject.contract(abi, contractAddress);
+      this.myContract = contractx;
+      console.log(this.myContract);
     }
+    this.initPage();
   }
 
   private async initPage() {
     // console.log(this.myContract);
     // const pb = await this.myContract.userInfo('TW9Fwdqet3Km6u4y41d5ANZruZ3C7f1nur').call();
     // this.poolBalance = this.tronWeb.fromSun(pb).toFixed(2);
+    this.success('LOADING');
     const contractInfo = await this.myContract.contractInfo().call();
     this.contractBalance = contractInfo._trx_balance;
     this.contractBalance = this.hexToTrx(this.contractBalance);
@@ -350,6 +368,7 @@ export default class Home extends Vue {
       // 未注册
       this.upLine = this.getUrlKey('ref');
       console.log(`ref upline :${this.upLine}`);
+      this.clearMyData();
       try {
         const uplineInfo = await this.myContract.users(this.upLine).call();
         const ttd1 = this.hexToTrx(uplineInfo.total_deposits);
@@ -357,14 +376,29 @@ export default class Home extends Vue {
         if (ttd1 > 0) {
           //
         } else {
-          this.upLine = 'TEPSJJXQHWjsjnDdWxuCG7aMRTDUVYvBt7';
+          this.upLine = defaultUpline;
         }
       } catch (err) {
         console.log(`ref upne err${err}`);
-        this.upLine = 'TEPSJJXQHWjsjnDdWxuCG7aMRTDUVYvBt7';
+        this.upLine = defaultUpline;
       }
       console.log(`real:${this.upLine}`);
     }
+  }
+
+  private clearMyData() {
+    this.myDymicFactor = 0;
+    this.myInvestTrx = 0;
+    this.myRefRewardAll = 0;
+    this.myReward1618 = 0;
+    this.myTeamRewardAll = 0;
+    this.myTop10RewardAll = 0;
+    this.myTotalDeposit = 0;
+    this.myTrxBalance = 0;
+    this.myTscBalance = 0;
+    this.myTscRewardAll = 0;
+    this.myWithdrawTrxAll = 0;
+    this.myWithdrawedTSC = 0;
   }
 
   private async deposit() {
@@ -464,13 +498,13 @@ export default class Home extends Vue {
 
   private success(message: string): void {
     setTimeout(() => {
-      this.$toast.success({ message, duration: 3000 });
+      this.$toast.success({ message, duration: 5000 });
     });
   }
 
   private fail(message: string): void {
     setTimeout(() => {
-      this.$toast.fail({ duration: 3000, message });
+      this.$toast.fail({ duration: 5000, message });
     });
   }
 
