@@ -41,8 +41,7 @@
         </div>
         <div>
           <span>{{t('TRELEASE')}}</span>
-          <span>{{totalWithDrawTrx}} TRX </span>
-          <span> {{totalReleaseTsc}} TSC</span>
+          <span>{{totalWithDrawTrx}} TRX <br/> {{totalReleaseTsc}} TSC</span>
         </div>
       </div>
 
@@ -62,7 +61,7 @@
           </div>
           <div class="actions flex align-center justify-between">
             <Btn @click="setTRX(0)">{{t('CANCEL')}}</Btn>
-            <Btn @click="deposit()" :loading="loading_w" type="green">{{t('LOCK')}}</Btn>
+            <Btn @click="deposit" :loading="loading_w" type="green">{{t('LOCK')}}</Btn>
           </div>
         </div>
       </Item>
@@ -84,7 +83,7 @@
 
       <Item :title="t('STAT')">
         <div>
-          <div class="text_row"><span>{{t('INV_LINK')}}</span><span>{{myInvLink}}</span></div>
+          <div class="text_row"><span>{{t('INV_LINK')}}</span><span><span class="copy" @click="copyText(myInvLink)">复制</span> {{myInvLink}}</span></div>
           <div class="text_row"><span>{{t('TRX_LINK')}}</span><span>{{myAddress}}</span></div>
           <div class="text_row"><span>{{t('INV_TOTAL')}}</span><span>{{myTotalDeposit}} TRX</span></div>
           <div class="text_row"><span>{{t('REWARD_161')}}</span><span>{{myReward1618}} TRX</span></div>
@@ -108,11 +107,11 @@
           </div>
           <div class="flex justify-between mt-3">
             <div>
-              <Btn type="blue" @click="tokenWithdraw()">{{t('TSC_COIN')}}</Btn>
+              <Btn type="blue" @click="withdrawTSC">{{t('TSC_COIN')}}</Btn>
               <div class="dynamic_tip">{{t('TSC_FEE')}}</div>
             </div>
             <div>
-              <Btn type="green" @click="withdraw()">{{t('TRX_COIN')}}</Btn>
+              <Btn type="green" @click="withdrawTRX">{{t('TRX_COIN')}}</Btn>
               <div class="dynamic_tip">{{t('TRX_FEE')}}</div>
             </div>
           </div>
@@ -268,8 +267,6 @@ export default class Home extends Vue {
 
   private created(): void {
     if (!langs[this.lang]) this.lang = 'zh';
-    alert(900);
-    this.initWebJect();
   }
 
   private mounted(): void {
@@ -290,9 +287,7 @@ export default class Home extends Vue {
     if (window.tronWeb) {
       this.tronWebInject = window.tronWeb;
       this.myAddress = this.tronWebInject.defaultAddress.base58;
-      console.log(this.myAddress);
       if (this.myAddress) {
-        console.log(window.tronWeb.defaultAddress.base58);
         const webInject = window.tronWeb;
         const contractx = webInject.contract(abi, contractAddress);
         this.myContract = contractx;
@@ -318,14 +313,11 @@ export default class Home extends Vue {
     this.totalDepositTrx = this.hexToTrx(contractInfo._total_deposited);
     this.totalWithDrawTrx = this.hexToTrx(contractInfo._total_withdraw);
     this.poolTop10 = this.hexToTrx(contractInfo._pool_balance) / 10;
-    const last_pool_time = contractInfo._pool_last_draw;
-    this.poolCountDown = this.calPoolCountDown(last_pool_time);
+    this.poolCountDown = this.calPoolCountDown(contractInfo._pool_last_draw);
 
     const userInfo = await this.myContract.users(this.myAddress).call();
     const ttd = this.hexToTrx(userInfo.total_deposits);
-    console.log(`ttd: ${ttd}`);
     if (ttd > 0) {
-      alert(ttd);
       this.upLine = this.tronWeb.address.fromHex(userInfo.upline);
       this.myInvLink = `${window.location.protocol}//${window.location.host}?ref=${this.myAddress}`;
       this.myTotalDeposit = this.hexToTrx(userInfo.total_deposits);
@@ -346,9 +338,9 @@ export default class Home extends Vue {
       }
 
       // 动态因子
-      const dymic_factor = await this.myContract.dynamicFactorOf(this.myAddress).call();
-      console.log(`dymic:${dymic_factor.dynamic_factor}`);
-      this.myDymicFactor = dymic_factor.dynamic_factor / 10;
+      const dymicFactor = await this.myContract.dynamicFactorOf(this.myAddress).call();
+      console.log(`dymic:${dymicFactor.dynamic_factor}`);
+      this.myDymicFactor = dymicFactor.dynamic_factor / 10;
 
       // 我的payouts
       const myPayouts = await this.myContract.payoutOf(this.myAddress).call();
@@ -356,13 +348,14 @@ export default class Home extends Vue {
       this.myTrxBalance = myPayouts.payout;
     } else {
       // 未注册
-      this.upLine = this.getUrlKey('ref', window.location.href);
+      this.upLine = this.getUrlKey('ref');
       console.log(`ref upline :${this.upLine}`);
       try {
         const uplineInfo = await this.myContract.users(this.upLine).call();
         const ttd1 = this.hexToTrx(uplineInfo.total_deposits);
         console.log(`ttd1: ${ttd1}`);
         if (ttd1 > 0) {
+          //
         } else {
           this.upLine = 'TEPSJJXQHWjsjnDdWxuCG7aMRTDUVYvBt7';
         }
@@ -374,34 +367,29 @@ export default class Home extends Vue {
     }
   }
 
-  private async deposit(trx: number) {
-    console.log(`up:${this.upLine}`);
-    console.log(`my:${this.myAddress}`);
-    if (this.trx == 0) {
-      this.$message({
-        message: 'dddddd',
-        type: 'warning',
-      });
-      return;
-    }
+  private async deposit() {
+    if (this.trx == 0) return;
     const args = {
       feeLimit: 200000000,
       callValue: this.tronWeb.toSun(this.trx),
       shouldPollResponse: true,
     };
 
-    await this.myContract.deposit(this.upLine).send(args).then((res) => {
+    this.$toast.loading({
+      forbidClick: true,
+    });
+
+    this.myContract.deposit(this.upLine).send(args).then(() => {
       this.initPage();
-      console.log(res);
-    }, (err) => {
-      alert(err);
-      console.log(err);
+    }, () => {
+      this.$toast.fail('Failed!');
+    }).finally(() => {
+      this.$toast.clear();
     });
   }
 
   private async withdrawTRX() {
     if (this.myTrxBalance <= 1) {
-      alert('TRX <= 1');
       return;
     }
     const args = {
@@ -410,18 +398,43 @@ export default class Home extends Vue {
       shouldPollResponse: true,
     };
 
-    this.myContract.withdraw().send(args).then((res) => {
-      this.initPage();
-      console.log(res);
-    }, (err) => {
-      alert(err);
-      console.log(err);
+    this.$toast.loading({
+      forbidClick: true,
     });
+
+    this.myContract.withdraw().send(args).then(() => {
+      this.initPage();
+    }, () => {
+      this.$toast.fail('Failed !');
+    }).finally(() => {
+      this.$toast.clear();
+    });
+  }
+
+  private copyText(value: string): void {
+    console.log(this.$toast('asdasd'));
+    const s = document.createElement('input');
+    s.value = value;
+    document.body.appendChild(s);
+
+    if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
+      s.contentEditable = 'true';
+      s.readOnly = false;
+      const range = document.createRange();
+      range.selectNodeContents(s);
+      const sel = window.getSelection() as any;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      s.setSelectionRange(0, 999999);
+    } else s.select();
+
+    try { document.execCommand('copy'); this.$toast('Copied!'); } catch (err) { this.$toast.fail('Copy error'); }
+
+    s.remove();
   }
 
   private async withdrawTSC() {
     if (this.myTscBalance <= 20) {
-      alert('TSC <= 0');
       return;
     }
     const args = {
@@ -430,12 +443,15 @@ export default class Home extends Vue {
       shouldPollResponse: true,
     };
 
-    this.myContract.tokenWithdraw().send(args).then((res) => {
+    this.$toast.loading({
+      forbidClick: true,
+    });
+    this.myContract.tokenWithdraw().send(args).then(() => {
       this.initPage();
-      console.log(res);
-    }, (err) => {
-      alert(err);
-      console.log(err);
+    }, () => {
+      this.$toast.fail('Failed!');
+    }).finally(() => {
+      this.$toast.clear();
     });
   }
 
@@ -444,8 +460,8 @@ export default class Home extends Vue {
     return '';
   }
 
-  private getUrlKey(name, url): string {
-    return decodeURIComponent((new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)').exec(url) || [, ''])[1].replace(/\+/g, '%20')) || null;
+  private getUrlKey(name: string): string {
+    return decodeURIComponent(location.search).slice(1).split('&').reduce((a: any, c) => { const [k, v] = c.split('='); a[k] = v; return a; }, {})[name];
   }
 
   private incTRX(inc: number): void {
@@ -464,17 +480,17 @@ export default class Home extends Vue {
     const lastD = new Date(lastTime);
     const now = new Date();
     const total = (now.getTime() - lastD.getTime()) / 1000;
-    const day = parseInt(total / (24 * 60 * 60));// 计算整数天数
+    const day = total / (24 * 60 * 60);// 计算整数天数
     if (day >= 1) {
       return '00:00';
     }
     const afterDay = total - day * 24 * 60 * 60;// 取得算出天数后剩余的秒数
 
-    const hour = parseInt(afterDay / (60 * 60));// 计算整数小时数
+    const hour = afterDay / (60 * 60);// 计算整数小时数
 
     const afterHour = total - day * 24 * 60 * 60 - hour * 60 * 60;// 取得算出小时数后剩余的秒数
 
-    const min = parseInt(afterHour / 60);// 计算整数分
+    const min = afterHour / 60;// 计算整数分
 
     return `${hour} : ${min}`;
   }
@@ -683,9 +699,16 @@ export default class Home extends Vue {
   align-items: center;
   justify-content: space-between;
   margin: 10px 0;
+  white-space: nowrap;
 
   :first-child {
     text-align: left;
+    margin-right: 10px;
+  }
+
+  :last-child {
+    overflow: hidden;
+  text-overflow: ellipsis;
   }
 }
 .dynamic {
@@ -705,5 +728,17 @@ export default class Home extends Vue {
   max-height: 50vh;
   overflow: auto;
   white-space: pre-wrap;
+}
+.copy {
+  margin: 0 !important;
+  padding: 0 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  border: 1px solid;
+  cursor: pointer;
+
+  &:active {
+    opacity: .7;
+  }
 }
 </style>
