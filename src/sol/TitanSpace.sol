@@ -381,6 +381,7 @@ contract Tspace {
     }
     
     function setMaxTscAmount(uint256 _max_tsc_amount) external {
+        require(msg.sender == owner, "Only owner");
         require(_max_tsc_amount > max_tsc_amount, "Invalid amount");
         
         max_tsc_amount = _max_tsc_amount;
