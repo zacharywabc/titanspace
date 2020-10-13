@@ -382,8 +382,9 @@ export default class Home extends Vue {
 
     this.myContract.deposit(this.upLine).send(args).then(() => {
       this.initPage();
+      this.success('Success!');
     }, () => {
-      this.$toast.fail('Failed!');
+      this.fail('Failed!');
     }).finally(() => {
       this.$toast.clear();
     });
@@ -406,8 +407,9 @@ export default class Home extends Vue {
 
     this.myContract.withdraw().send(args).then(() => {
       this.initPage();
+      this.success('Success!');
     }, () => {
-      this.$toast.fail('Failed !');
+      this.fail('Failed!');
     }).finally(() => {
       this.$toast.clear();
     });
@@ -447,14 +449,28 @@ export default class Home extends Vue {
 
     this.$toast.loading({
       forbidClick: true,
-      duration: 0,
+      duration: 0, // 如果不想长时间显示loading可删除该参数
     });
     this.myContract.tokenWithdraw().send(args).then(() => {
       this.initPage();
+      this.success('Success!');
     }, () => {
-      this.$toast.fail('Failed!');
-    }).finally(() => {
-      this.$toast.clear();
+      this.fail('Failed!');
+    })
+      .finally(() => { // 如果不想长时间显示loading可删除该方法
+        this.$toast.clear();
+      });
+  }
+
+  private success(message: string): void {
+    setTimeout(() => {
+      this.$toast.success({ message, duration: 3000 });
+    });
+  }
+
+  private fail(message: string): void {
+    setTimeout(() => {
+      this.$toast.fail({ duration: 3000, message });
     });
   }
 
