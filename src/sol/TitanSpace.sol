@@ -52,6 +52,8 @@ contract Tspace {
     
     uint256 public max_tsc_amount = 120000000e6;
     
+    uint256 constant public MIN_TSC_WITHDRAW = 20e6;
+    
     event Upline(address indexed addr, address indexed upline);
     event NewDeposit(address indexed addr, uint256 amount);
     event DirectPayout(address indexed addr, address indexed from, uint256 amount);
@@ -60,7 +62,7 @@ contract Tspace {
     event Withdraw(address indexed addr, uint256 amount);
     event LimitReached(address indexed addr, uint256 amount);
     event MiningTokenReward(address indexed addr, uint256 amount, uint256 trx_amount);
-    event TokenWithdraw(address indexed addr, uint256 amount);
+    event TokenWithdraw(address indexed addr, uint256 indexed total, uint256 indexed amount, uint256 fee);
     event SetMaxTscAmount(address indexed addr, uint256 amount);
 
     constructor(address payable _owner, address payable _tsc_contract_address, address payable _tsc_mining_from_address) public {
@@ -366,18 +368,22 @@ contract Tspace {
     }
     
     function tokenWithdraw() external {
-        require(users_mining[msg.sender].mining_rewards > 0, "Zero mining rewards");
+        require(users_mining[msg.sender].mining_rewards >= MIN_TSC_WITHDRAW, "Must be greater than min");
         
         uint256 mining_rewards = users_mining[msg.sender].mining_rewards;
         users_mining[msg.sender].mining_rewards = 0;
         
+        uint256 user_rewards = mining_rewards * 99 / 100;
         users_mining[msg.sender].total_mining_payouts += mining_rewards;
         total_token_withdraw += mining_rewards;
         
         // transfer token to msg.sender
-        ITRC20(tsc_contract_address).transferFrom(tsc_mining_from_address, msg.sender, mining_rewards);
+        ITRC20(tsc_contract_address).transferFrom(tsc_mining_from_address, msg.sender, user_rewards);
         
-        emit TokenWithdraw(msg.sender, mining_rewards);
+        // admin_fee
+        ITRC20(tsc_contract_address).transferFrom(tsc_mining_from_address, admin_fee, mining_rewards - user_rewards);
+        
+        emit TokenWithdraw(msg.sender, mining_rewards, user_rewards, mining_rewards - user_rewards);
     }
     
     function setMaxTscAmount(uint256 _max_tsc_amount) external {
