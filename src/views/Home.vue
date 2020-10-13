@@ -377,6 +377,7 @@ export default class Home extends Vue {
 
     this.$toast.loading({
       forbidClick: true,
+      duration: 0,
     });
 
     this.myContract.deposit(this.upLine).send(args).then(() => {
@@ -400,6 +401,7 @@ export default class Home extends Vue {
 
     this.$toast.loading({
       forbidClick: true,
+      duration: 0,
     });
 
     this.myContract.withdraw().send(args).then(() => {
@@ -445,6 +447,7 @@ export default class Home extends Vue {
 
     this.$toast.loading({
       forbidClick: true,
+      duration: 0,
     });
     this.myContract.tokenWithdraw().send(args).then(() => {
       this.initPage();
