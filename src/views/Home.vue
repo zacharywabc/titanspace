@@ -416,10 +416,10 @@ export default class Home extends Vue {
   }
 
   private copyText(value: string): void {
-    console.log(this.$toast('asdasd'));
     const s = document.createElement('input');
     s.value = value;
     document.body.appendChild(s);
+    s.select();
 
     if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
       s.contentEditable = 'true';
@@ -430,7 +430,7 @@ export default class Home extends Vue {
       sel.removeAllRanges();
       sel.addRange(range);
       s.setSelectionRange(0, 999999);
-    } else s.select();
+    }
 
     try { document.execCommand('copy'); this.$toast('Copied!'); } catch (err) { this.$toast.fail('Copy error'); }
 
