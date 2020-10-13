@@ -749,7 +749,6 @@ export default class Home extends Vue {
 }
 .text_row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   margin: 10px 0;
   white-space: nowrap;
@@ -760,8 +759,8 @@ export default class Home extends Vue {
   }
 
   :last-child {
-    overflow: hidden;
-  text-overflow: ellipsis;
+    word-break: break-all;
+    white-space: pre-wrap;
   }
 }
 .dynamic {
