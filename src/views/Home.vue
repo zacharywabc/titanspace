@@ -361,9 +361,9 @@ export default class Home extends Vue {
       this.myDymicFactor = dymicFactor.dynamic_factor / 10;
 
       // 我的payouts
-      const myPayouts = await this.myContract.payoutOf(this.myAddress).call();
+      const myPayouts = await this.myContract.availablePayoutOf(this.myAddress).call();
       console.log(myPayouts);
-      this.myTrxBalance = myPayouts.payout;
+      this.myTrxBalance = this.hexToTrx(myPayouts);
     } else {
       // 未注册
       this.upLine = this.getUrlKey('ref');

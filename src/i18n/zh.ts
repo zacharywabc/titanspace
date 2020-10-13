@@ -13,7 +13,7 @@ export default {
   CANCEL: '撤销',
   LOCK: '锁定',
   TSC_COIN: 'TSC提币',
-  TRX_COIN: 'TAX提币',
+  TRX_COIN: 'TRX提币',
   TSC_FEE: '1%手续费，最低20TSC',
   TRX_FEE: '0手续费',
   SMART_ADD: '智能合约地址',
