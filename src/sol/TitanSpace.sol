@@ -398,50 +398,56 @@ contract Tspace {
     function availablePayoutOf(address _addr) view external returns(uint256) {
         (uint256 to_payout, uint256 max_payout) = this.payoutOf(_addr);
         
-        if(users[_addr].payouts >= max_payout){
-            return 0;
-        }
-
+        uint256 userPayOuts = users[_addr].payouts;
+        
         // Deposit payout
         if(to_payout > 0) {
-            if(users[_addr].payouts + to_payout > max_payout) {
-                to_payout = max_payout - users[_addr].payouts;
+            if(userPayOuts + to_payout > max_payout) {
+                to_payout = max_payout - userPayOuts;
             }
+            userPayOuts += to_payout;
         }
         
         // Direct payout
-        if(users[_addr].payouts < max_payout && users[_addr].direct_bonus > 0) {
+        if(userPayOuts < max_payout && users[_addr].direct_bonus > 0) {
             uint256 direct_bonus = users[_addr].direct_bonus;
 
-            if(users[_addr].payouts + direct_bonus > max_payout) {
-                direct_bonus = max_payout - users[_addr].payouts;
+            if(userPayOuts + direct_bonus > max_payout) {
+                direct_bonus = max_payout - userPayOuts;
             }
-
+            
+            userPayOuts += direct_bonus;
             to_payout += direct_bonus;
         }
         
         // Pool payout
-        if(users[_addr].payouts < max_payout && users[_addr].pool_bonus > 0) {
+        if(userPayOuts < max_payout && users[_addr].pool_bonus > 0) {
             uint256 pool_bonus = users[_addr].pool_bonus;
 
-            if(users[_addr].payouts + pool_bonus > max_payout) {
-                pool_bonus = max_payout - users[_addr].payouts;
+            if(userPayOuts + pool_bonus > max_payout) {
+                pool_bonus = max_payout - userPayOuts;
             }
             
+            userPayOuts += pool_bonus;
             to_payout += pool_bonus;
         }
 
         // Match payout
-        if(users[_addr].payouts < max_payout && users[_addr].match_bonus > 0) {
+        if(userPayOuts < max_payout && users[_addr].match_bonus > 0) {
             uint256 match_bonus = users[_addr].match_bonus;
 
-            if(users[_addr].payouts + match_bonus > max_payout) {
-                match_bonus = max_payout - users[_addr].payouts;
+            if(userPayOuts + match_bonus > max_payout) {
+                match_bonus = max_payout - userPayOuts;
             }
             
+            userPayOuts += match_bonus;
             to_payout += match_bonus;
         }
-
+        
+        if(userPayOuts >= max_payout){
+            return 0;
+        }
+        
         return to_payout;
     }
 
