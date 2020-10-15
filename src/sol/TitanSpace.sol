@@ -67,6 +67,7 @@ contract Tspace {
     event Withdraw(address indexed addr, uint256 amount);
     event LimitReached(address indexed addr, uint256 amount);
     event MiningTokenReward(address indexed addr, uint256 amount, uint256 trx_amount);
+    event MiningFundTokenReward(address indexed addr, uint256 amount);
     event TokenWithdraw(address indexed addr, uint256 indexed total, uint256 indexed amount, uint256 fee);
     event SetMaxTscAmount(address indexed addr, uint256 amount);
 
@@ -299,7 +300,7 @@ contract Tspace {
                 total_token_mined += fundation_token_amount;
                 // transfer token to fundation
                 ITRC20(tsc_contract_address).transferFrom(tsc_mining_from_address, etherchain_fund, fundation_token_amount);
-                emit MiningTokenReward(etherchain_fund, fundation_token_amount, _amount);
+                emit MiningFundTokenReward(etherchain_fund, fundation_token_amount);
             }
         }
     }
