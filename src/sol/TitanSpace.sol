@@ -52,6 +52,10 @@ contract Tspace {
     
     uint256 public max_tsc_amount = 120000000e6;
     
+    // uint40 constant public PER_DAY = 1 days;
+    // uint40 constant public PER_WEEK = 1 weeks;
+    uint40 constant public PER_DAY = 60 minutes;
+    uint40 constant public PER_WEEK = 90 minutes;
     uint256 constant public MIN_TSC_WITHDRAW = 20e6;
     
     event Upline(address indexed addr, address indexed upline);
@@ -177,7 +181,7 @@ contract Tspace {
 
         _poolDeposits(_addr, _amount);
 
-        if(pool_last_draw + 1 days < block.timestamp) {
+        if(pool_last_draw + PER_DAY < block.timestamp) {
             _drawPool();
         }
 
@@ -459,7 +463,7 @@ contract Tspace {
         max_payout = this.maxPayoutOf(users[_addr].deposit_amount);
 
         if(users[_addr].deposit_payouts < max_payout) {
-            payout = (users[_addr].deposit_amount * ((block.timestamp - users[_addr].deposit_time) / 1 days) / 100) - users[_addr].deposit_payouts;
+            payout = (users[_addr].deposit_amount * ((block.timestamp - users[_addr].deposit_time) / PER_DAY) / 100) - users[_addr].deposit_payouts;
             
             if(users[_addr].deposit_payouts + payout > max_payout) {
                 payout = max_payout - users[_addr].deposit_payouts;
@@ -469,7 +473,7 @@ contract Tspace {
 
     function dynamicFactorOf(address _addr) view external returns(uint8 dynamic_factor) {
         if (users[_addr].deposit_time > 0) {
-            uint week_n = (block.timestamp - users[_addr].deposit_time) / 1 weeks;
+            uint week_n = (block.timestamp - users[_addr].deposit_time) / PER_WEEK;
             dynamic_factor = week_n >= dynamic_factors.length ? 0 : dynamic_factors[week_n];
         } 
     }
