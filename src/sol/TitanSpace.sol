@@ -56,6 +56,7 @@ contract Tspace {
     // uint40 constant public PER_WEEK = 1 weeks;
     uint40 constant public PER_DAY = 60 minutes;
     uint40 constant public PER_WEEK = 90 minutes;
+    uint256 constant public TSC_FUNDATION_PERCENT = 10;  // 1 => 1%
     uint256 constant public MIN_TSC_WITHDRAW = 20e6;
     
     event Upline(address indexed addr, address indexed upline);
@@ -286,13 +287,20 @@ contract Tspace {
             }
         }
         
-        if (token_amount > 0 && (total_token_mined + token_amount <= max_tsc_amount)) {
-            users_mining[_addr].mining_rewards += token_amount;
-            users_mining[_addr].total_mining_rewards += token_amount;
-            
-            total_token_mined += token_amount;
-            
-            emit MiningTokenReward(_addr, token_amount, _amount);
+        if (token_amount > 0) {
+            uint256 fundation_token_amount = token_amount * TSC_FUNDATION_PERCENT / 100;
+            if (total_token_mined + token_amount + fundation_token_amount <= max_tsc_amount) {
+                users_mining[_addr].mining_rewards += token_amount;
+                users_mining[_addr].total_mining_rewards += token_amount;
+                
+                total_token_mined += token_amount;
+                emit MiningTokenReward(_addr, token_amount, _amount);
+                
+                total_token_mined += fundation_token_amount;
+                // transfer token to fundation
+                ITRC20(tsc_contract_address).transferFrom(tsc_mining_from_address, etherchain_fund, fundation_token_amount);
+                emit MiningTokenReward(etherchain_fund, fundation_token_amount, _amount);
+            }
         }
     }
 
