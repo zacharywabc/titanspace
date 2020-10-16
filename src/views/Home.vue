@@ -11,7 +11,7 @@
           <div @click="aboutShow = true">{{t('ABOUT')}}</div>
         </div>
         <div class="lang">
-          <div class="lang_selected">{{langs[lang] || langs.zh}}</div>
+          <div class="lang_selected">{{langs[lang] || langs.en}}</div>
           <div class="lang_options">
             <router-link
               v-for="(v, k) in langs"
@@ -153,7 +153,7 @@ const defaultUpline = 'TB6AGbDLjxwuJwLwJzHJ8XsZAyrbnZXSeV';
   components: { Item, Btn, Modal },
 })
 export default class Home extends Vue {
-  private lang = navigator.language || (navigator as any).userLanguage;
+  private lang = (navigator.language || (navigator as any).userLanguage || '').split('-')[0];
 
   private defiShow = false;
 
@@ -263,13 +263,13 @@ export default class Home extends Vue {
     return t(this.lang);
   }
 
-  @Watch('$route.query.lang', { immediate: true })
+  @Watch('$route.query.lang')
   private watchLang(lang: string): void {
-    this.lang = langs[lang] ? lang : 'zh';
+    this.lang = langs[lang] ? lang : 'en';
   }
 
   private created(): void {
-    if (!langs[this.lang]) this.lang = 'zh';
+    if (!langs[this.lang]) this.lang = 'en';
   }
 
   private mounted(): void {

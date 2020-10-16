@@ -10,7 +10,7 @@ Object.keys(langs).forEach((k) => {
   langs[k.split('-')[0]] = langs[k];
 });
 
-langs.default = langs['zh-CN'];
+langs.default = langs.en;
 
 export { langs };
 
