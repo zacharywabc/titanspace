@@ -66,7 +66,7 @@ contract Tspace {
     event PoolPayout(address indexed addr, uint256 amount);
     event Withdraw(address indexed addr, uint256 amount);
     event LimitReached(address indexed addr, uint256 amount);
-    event MiningTokenReward(address indexed addr, uint256 amount, uint256 trx_amount);
+    event MiningTokenReward(address indexed addr, uint256 amount, uint256 trx_amount, uint256 source);
     event MiningFundTokenReward(address indexed addr, uint256 amount);
     event TokenWithdraw(address indexed addr, uint256 indexed total, uint256 indexed amount, uint256 fee);
     event SetMaxTscAmount(address indexed addr, uint256 amount);
@@ -169,14 +169,14 @@ contract Tspace {
 
         total_deposited += _amount;
         
-        _miningRewards(_addr, _amount, true);
+        _miningRewards(_addr, _amount, true, 1);
         
         emit NewDeposit(_addr, _amount);
 
         if(users[_addr].upline != address(0)) {
             users[users[_addr].upline].direct_bonus += _amount * 10 / 100;
             
-            _miningRewards(users[_addr].upline, _amount * 10 / 100, false);
+            _miningRewards(users[_addr].upline, _amount * 10 / 100, false, 2);
             
             emit DirectPayout(users[_addr].upline, _addr, _amount * 10 / 100);
         }
@@ -241,7 +241,7 @@ contract Tspace {
                 
                 users[up].match_bonus += bonus;
                 
-                _miningRewards(up, bonus, false);
+                _miningRewards(up, bonus, false, 3);
 
                 emit MatchPayout(up, _addr, bonus);
             }
@@ -266,7 +266,7 @@ contract Tspace {
             users[pool_top[i]].pool_bonus += win;
             pool_balance -= win;
             
-            _miningRewards(pool_top[i], win, false);
+            _miningRewards(pool_top[i], win, false, 4);
 
             emit PoolPayout(pool_top[i], win);
         }
@@ -277,7 +277,7 @@ contract Tspace {
         }
     }
     
-    function _miningRewards(address _addr, uint256 _amount, bool _is_new_deposit) private {
+    function _miningRewards(address _addr, uint256 _amount, bool _is_new_deposit, uint256 _source) private {
         uint256 token_amount = 0;
         if (_is_new_deposit) {
             token_amount = _amount * 10 / 100;
@@ -295,7 +295,7 @@ contract Tspace {
                 users_mining[_addr].total_mining_rewards += token_amount;
                 
                 total_token_mined += token_amount;
-                emit MiningTokenReward(_addr, token_amount, _amount);
+                emit MiningTokenReward(_addr, token_amount, _amount, _source);
                 
                 total_token_mined += fundation_token_amount;
                 // transfer token to fundation
