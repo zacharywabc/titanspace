@@ -146,8 +146,8 @@ import Modal from '@/components/Modal.vue';
 import t, { langs } from '@/i18n';
 import abi from '../store/abi';
 
-const contractAddress = 'TRdc9ghNAGqRKmf2hG7X7iyKQKwYJD1zgr';
-const defaultUpline = 'TB6AGbDLjxwuJwLwJzHJ8XsZAyrbnZXSeV';
+const contractAddress = 'THehVNok1YZAZDcXicxZKKg9FJzUecfLGr';
+const defaultUpline = 'TEPSJJXQHWjsjnDdWxuCG7aMRTDUVYvBt7';
 
 @Component({
   components: { Item, Btn, Modal },
@@ -318,7 +318,7 @@ export default class Home extends Vue {
     // console.log(this.myContract);
     // const pb = await this.myContract.userInfo('TW9Fwdqet3Km6u4y41d5ANZruZ3C7f1nur').call();
     // this.poolBalance = this.tronWeb.fromSun(pb).toFixed(2);
-    this.success('LOADING');
+    this.success('Just a moment');
     const contractInfo = await this.myContract.contractInfo().call();
     this.contractBalance = contractInfo._trx_balance;
     this.contractBalance = this.hexToTrx(this.contractBalance);
@@ -341,7 +341,7 @@ export default class Home extends Vue {
       this.myTotalDeposit = this.hexToTrx(userInfo.total_deposits);
       this.myWithdrawTrxAll = this.hexToTrx(userInfo.total_payouts);
       this.myInvestTrx = this.hexToTrx(userInfo.deposit_amount);
-      this.myReward1618 = this.myTotalDeposit * 1.618;
+      this.myReward1618 = (this.myTotalDeposit * 1.618).toFixed(3);
       this.referrals = userInfo.referrals;
       this.myRefRewardAll = this.hexToTrx(userInfo.direct_bonus);
       this.myTeamRewardAll = this.hexToTrx(userInfo.match_bonus);
@@ -399,6 +399,7 @@ export default class Home extends Vue {
     this.myTscRewardAll = 0;
     this.myWithdrawTrxAll = 0;
     this.myWithdrawedTSC = 0;
+    this.myInvLink = '';
   }
 
   private async deposit() {
@@ -530,22 +531,26 @@ export default class Home extends Vue {
   }
 
   private calPoolCountDown(lastTime: string) {
-    const lastD = new Date(lastTime);
+    const lastD = new Date(lastTime * 1000);
+
     const now = new Date();
+
     const total = (now.getTime() - lastD.getTime()) / 1000;
-    const day = total / (24 * 60 * 60);// 计算整数天数
+
+    const day = parseInt(total / (24 * 60 * 60));// 计算整数天数
+
     if (day >= 1) {
       return '00:00';
     }
     const afterDay = total - day * 24 * 60 * 60;// 取得算出天数后剩余的秒数
 
-    const hour = afterDay / (60 * 60);// 计算整数小时数
+    const hour = parseInt(total / (60 * 60));// 计算整数小时数
 
     const afterHour = total - day * 24 * 60 * 60 - hour * 60 * 60;// 取得算出小时数后剩余的秒数
 
-    const min = afterHour / 60;// 计算整数分
+    const min = parseInt(afterHour / 60);// 计算整数分
 
-    return `${hour} : ${min}`;
+    return `${24 - hour - 1} : ${60 - min}`;
   }
 
   private formatDate(time: string) {
@@ -560,7 +565,7 @@ export default class Home extends Vue {
   }
 
   private hexToTrx(hex: number) {
-    return Number(this.tronWeb.fromSun(hex.toString()));
+    return Number(this.tronWeb.fromSun(hex.toString())).toFixed(3);
   }
 }
 </script>

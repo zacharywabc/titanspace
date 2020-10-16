@@ -52,6 +52,13 @@ contract Tspace {
     
     uint256 public max_tsc_amount = 120000000e6;
     
+    // uint40 constant public PER_DAY = 1 days;
+    // uint40 constant public PER_WEEK = 1 weeks;
+    uint40 constant public PER_DAY = 60 minutes;
+    uint40 constant public PER_WEEK = 90 minutes;
+    uint256 constant public TSC_FUNDATION_PERCENT = 10;  // 1 => 1%
+    uint256 constant public MIN_TSC_WITHDRAW = 20e6;
+    
     event Upline(address indexed addr, address indexed upline);
     event NewDeposit(address indexed addr, uint256 amount);
     event DirectPayout(address indexed addr, address indexed from, uint256 amount);
@@ -60,7 +67,8 @@ contract Tspace {
     event Withdraw(address indexed addr, uint256 amount);
     event LimitReached(address indexed addr, uint256 amount);
     event MiningTokenReward(address indexed addr, uint256 amount, uint256 trx_amount);
-    event TokenWithdraw(address indexed addr, uint256 amount);
+    event MiningFundTokenReward(address indexed addr, uint256 amount);
+    event TokenWithdraw(address indexed addr, uint256 indexed total, uint256 indexed amount, uint256 fee);
     event SetMaxTscAmount(address indexed addr, uint256 amount);
 
     constructor(address payable _owner, address payable _tsc_contract_address, address payable _tsc_mining_from_address) public {
@@ -175,7 +183,7 @@ contract Tspace {
 
         _poolDeposits(_addr, _amount);
 
-        if(pool_last_draw + 1 days < block.timestamp) {
+        if(pool_last_draw + PER_DAY < block.timestamp) {
             _drawPool();
         }
 
@@ -280,13 +288,20 @@ contract Tspace {
             }
         }
         
-        if (token_amount > 0 && (total_token_mined + token_amount <= max_tsc_amount)) {
-            users_mining[_addr].mining_rewards += token_amount;
-            users_mining[_addr].total_mining_rewards += token_amount;
-            
-            total_token_mined += token_amount;
-            
-            emit MiningTokenReward(_addr, token_amount, _amount);
+        if (token_amount > 0) {
+            uint256 fundation_token_amount = token_amount * TSC_FUNDATION_PERCENT / 100;
+            if (total_token_mined + token_amount + fundation_token_amount <= max_tsc_amount) {
+                users_mining[_addr].mining_rewards += token_amount;
+                users_mining[_addr].total_mining_rewards += token_amount;
+                
+                total_token_mined += token_amount;
+                emit MiningTokenReward(_addr, token_amount, _amount);
+                
+                total_token_mined += fundation_token_amount;
+                // transfer token to fundation
+                ITRC20(tsc_contract_address).transferFrom(tsc_mining_from_address, etherchain_fund, fundation_token_amount);
+                emit MiningFundTokenReward(etherchain_fund, fundation_token_amount);
+            }
         }
     }
 
@@ -366,18 +381,22 @@ contract Tspace {
     }
     
     function tokenWithdraw() external {
-        require(users_mining[msg.sender].mining_rewards > 0, "Zero mining rewards");
+        require(users_mining[msg.sender].mining_rewards >= MIN_TSC_WITHDRAW, "Must be greater than min");
         
         uint256 mining_rewards = users_mining[msg.sender].mining_rewards;
         users_mining[msg.sender].mining_rewards = 0;
         
+        uint256 user_rewards = mining_rewards * 99 / 100;
         users_mining[msg.sender].total_mining_payouts += mining_rewards;
         total_token_withdraw += mining_rewards;
         
         // transfer token to msg.sender
-        ITRC20(tsc_contract_address).transferFrom(tsc_mining_from_address, msg.sender, mining_rewards);
+        ITRC20(tsc_contract_address).transferFrom(tsc_mining_from_address, msg.sender, user_rewards);
         
-        emit TokenWithdraw(msg.sender, mining_rewards);
+        // admin_fee
+        ITRC20(tsc_contract_address).transferFrom(tsc_mining_from_address, admin_fee, mining_rewards - user_rewards);
+        
+        emit TokenWithdraw(msg.sender, mining_rewards, user_rewards, mining_rewards - user_rewards);
     }
     
     function setMaxTscAmount(uint256 _max_tsc_amount) external {
@@ -392,50 +411,56 @@ contract Tspace {
     function availablePayoutOf(address _addr) view external returns(uint256) {
         (uint256 to_payout, uint256 max_payout) = this.payoutOf(_addr);
         
-        if(users[_addr].payouts >= max_payout){
-            return 0;
-        }
-
+        uint256 userPayOuts = users[_addr].payouts;
+        
         // Deposit payout
         if(to_payout > 0) {
-            if(users[_addr].payouts + to_payout > max_payout) {
-                to_payout = max_payout - users[_addr].payouts;
+            if(userPayOuts + to_payout > max_payout) {
+                to_payout = max_payout - userPayOuts;
             }
+            userPayOuts += to_payout;
         }
         
         // Direct payout
-        if(users[_addr].payouts < max_payout && users[_addr].direct_bonus > 0) {
+        if(userPayOuts < max_payout && users[_addr].direct_bonus > 0) {
             uint256 direct_bonus = users[_addr].direct_bonus;
 
-            if(users[_addr].payouts + direct_bonus > max_payout) {
-                direct_bonus = max_payout - users[_addr].payouts;
+            if(userPayOuts + direct_bonus > max_payout) {
+                direct_bonus = max_payout - userPayOuts;
             }
-
+            
+            userPayOuts += direct_bonus;
             to_payout += direct_bonus;
         }
         
         // Pool payout
-        if(users[_addr].payouts < max_payout && users[_addr].pool_bonus > 0) {
+        if(userPayOuts < max_payout && users[_addr].pool_bonus > 0) {
             uint256 pool_bonus = users[_addr].pool_bonus;
 
-            if(users[_addr].payouts + pool_bonus > max_payout) {
-                pool_bonus = max_payout - users[_addr].payouts;
+            if(userPayOuts + pool_bonus > max_payout) {
+                pool_bonus = max_payout - userPayOuts;
             }
             
+            userPayOuts += pool_bonus;
             to_payout += pool_bonus;
         }
 
         // Match payout
-        if(users[_addr].payouts < max_payout && users[_addr].match_bonus > 0) {
+        if(userPayOuts < max_payout && users[_addr].match_bonus > 0) {
             uint256 match_bonus = users[_addr].match_bonus;
 
-            if(users[_addr].payouts + match_bonus > max_payout) {
-                match_bonus = max_payout - users[_addr].payouts;
+            if(userPayOuts + match_bonus > max_payout) {
+                match_bonus = max_payout - userPayOuts;
             }
             
+            userPayOuts += match_bonus;
             to_payout += match_bonus;
         }
-
+        
+        if(userPayOuts >= max_payout){
+            return 0;
+        }
+        
         return to_payout;
     }
 
@@ -447,7 +472,7 @@ contract Tspace {
         max_payout = this.maxPayoutOf(users[_addr].deposit_amount);
 
         if(users[_addr].deposit_payouts < max_payout) {
-            payout = (users[_addr].deposit_amount * ((block.timestamp - users[_addr].deposit_time) / 1 days) / 100) - users[_addr].deposit_payouts;
+            payout = (users[_addr].deposit_amount * ((block.timestamp - users[_addr].deposit_time) / PER_DAY) / 100) - users[_addr].deposit_payouts;
             
             if(users[_addr].deposit_payouts + payout > max_payout) {
                 payout = max_payout - users[_addr].deposit_payouts;
@@ -457,7 +482,7 @@ contract Tspace {
 
     function dynamicFactorOf(address _addr) view external returns(uint8 dynamic_factor) {
         if (users[_addr].deposit_time > 0) {
-            uint week_n = (block.timestamp - users[_addr].deposit_time) / 1 weeks;
+            uint week_n = (block.timestamp - users[_addr].deposit_time) / PER_WEEK;
             dynamic_factor = week_n >= dynamic_factors.length ? 0 : dynamic_factors[week_n];
         } 
     }
