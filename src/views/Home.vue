@@ -271,6 +271,7 @@ export default class Home extends Vue {
   }
 
   private created(): void {
+    if (this.$route.query.lang) this.lang = this.$route.query.lang;
     if (!langs[this.lang]) this.lang = 'en';
   }
 
