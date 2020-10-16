@@ -138,6 +138,8 @@
   </div>
 </template>
 <script lang="ts">
+// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+// @ts-ignore
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import TronWeb from 'tronweb';
 import Item from '@/components/Item.vue';
@@ -181,13 +183,13 @@ export default class Home extends Vue {
   private totalWithDrawTrx = 0;
 
   // 总释放量TSC
-  private totalReleaseTsc = 0;
+  private totalReleaseTsc: any = 0;
 
   // 合约余额
-  private contractBalance = 0;
+  private contractBalance: any = 0;
 
   // TSC已提总量
-  private totalWithdrawTSC = 0;
+  private totalWithdrawTSC: any = 0;
 
   // 邀请人地址
   private upLine = '';
@@ -328,31 +330,31 @@ export default class Home extends Vue {
     this.totalWithdrawTSC = this.hexToTrx(this.totalWithdrawTSC);
 
     this.globalMember = contractInfo._total_users;
-    this.totalDepositTrx = this.hexToTrx(contractInfo._total_deposited);
-    this.totalWithDrawTrx = this.hexToTrx(contractInfo._total_withdraw);
-    this.poolTop10 = this.hexToTrx(contractInfo._pool_balance) / 10;
+    this.totalDepositTrx = this.hexToTrx(contractInfo._total_deposited) as any;
+    this.totalWithDrawTrx = this.hexToTrx(contractInfo._total_withdraw) as any;
+    this.poolTop10 = this.hexToTrx(contractInfo._pool_balance) as any / 10;
     this.poolCountDown = this.calPoolCountDown(contractInfo._pool_last_draw);
 
     const userInfo = await this.myContract.users(this.myAddress).call();
     const ttd = this.hexToTrx(userInfo.total_deposits);
-    if (ttd > 0) {
+    if (ttd as any > 0) {
       this.upLine = this.tronWeb.address.fromHex(userInfo.upline);
       this.myInvLink = `${window.location.protocol}//${window.location.host}?ref=${this.myAddress}`;
-      this.myTotalDeposit = this.hexToTrx(userInfo.total_deposits);
-      this.myWithdrawTrxAll = this.hexToTrx(userInfo.total_payouts);
-      this.myInvestTrx = this.hexToTrx(userInfo.deposit_amount);
-      this.myReward1618 = (this.myTotalDeposit * 1.618).toFixed(3);
+      this.myTotalDeposit = this.hexToTrx(userInfo.total_deposits) as any;
+      this.myWithdrawTrxAll = this.hexToTrx(userInfo.total_payouts) as any;
+      this.myInvestTrx = this.hexToTrx(userInfo.deposit_amount) as any;
+      this.myReward1618 = (this.myTotalDeposit * 1.618).toFixed(3) as any;
       this.referrals = userInfo.referrals;
-      this.myRefRewardAll = this.hexToTrx(userInfo.direct_bonus);
-      this.myTeamRewardAll = this.hexToTrx(userInfo.match_bonus);
-      this.myTop10RewardAll = this.hexToTrx(userInfo.pool_bonus);
+      this.myRefRewardAll = this.hexToTrx(userInfo.direct_bonus) as any;
+      this.myTeamRewardAll = this.hexToTrx(userInfo.match_bonus) as any;
+      this.myTop10RewardAll = this.hexToTrx(userInfo.pool_bonus) as any;
 
       // TSC 挖矿
       const tscMiningInfo = await this.myContract.users_mining(this.myAddress).call();
       if (tscMiningInfo) {
-        this.myTscBalance = this.hexToTrx(tscMiningInfo.mining_rewards);
-        this.myTscRewardAll = this.hexToTrx(tscMiningInfo.total_mining_rewards);
-        this.myWithdrawedTSC = this.hexToTrx(tscMiningInfo.total_mining_payouts);
+        this.myTscBalance = this.hexToTrx(tscMiningInfo.mining_rewards) as any;
+        this.myTscRewardAll = this.hexToTrx(tscMiningInfo.total_mining_rewards) as any;
+        this.myWithdrawedTSC = this.hexToTrx(tscMiningInfo.total_mining_payouts) as any;
       }
 
       // 动态因子
@@ -363,7 +365,7 @@ export default class Home extends Vue {
       // 我的payouts
       const myPayouts = await this.myContract.availablePayoutOf(this.myAddress).call();
       console.log(myPayouts);
-      this.myTrxBalance = this.hexToTrx(myPayouts);
+      this.myTrxBalance = this.hexToTrx(myPayouts) as any;
     } else {
       // 未注册
       this.upLine = this.getUrlKey('ref');
@@ -373,7 +375,7 @@ export default class Home extends Vue {
         const uplineInfo = await this.myContract.users(this.upLine).call();
         const ttd1 = this.hexToTrx(uplineInfo.total_deposits);
         console.log(`ttd1: ${ttd1}`);
-        if (ttd1 > 0) {
+        if (ttd1 as any > 0) {
           //
         } else {
           this.upLine = defaultUpline;
@@ -531,24 +533,24 @@ export default class Home extends Vue {
   }
 
   private calPoolCountDown(lastTime: string) {
-    const lastD = new Date(lastTime * 1000);
+    const lastD = new Date(lastTime as any * 1000);
 
     const now = new Date();
 
     const total = (now.getTime() - lastD.getTime()) / 1000;
 
-    const day = parseInt(total / (24 * 60 * 60));// 计算整数天数
+    const day = parseInt(total as any / (24 * 60 * 60) as any, 10) as any;// 计算整数天数
 
     if (day >= 1) {
       return '00:00';
     }
     const afterDay = total - day * 24 * 60 * 60;// 取得算出天数后剩余的秒数
 
-    const hour = parseInt(total / (60 * 60));// 计算整数小时数
+    const hour = parseInt(total / (60 * 60) as any, 10);// 计算整数小时数
 
     const afterHour = total - day * 24 * 60 * 60 - hour * 60 * 60;// 取得算出小时数后剩余的秒数
 
-    const min = parseInt(afterHour / 60);// 计算整数分
+    const min = parseInt(afterHour / 60 as any, 10);// 计算整数分
 
     return `${24 - hour - 1} : ${60 - min}`;
   }
